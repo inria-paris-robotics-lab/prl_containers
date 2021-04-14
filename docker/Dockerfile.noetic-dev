@@ -1,0 +1,37 @@
+FROM osrf/ros:noetic-desktop-full
+
+# install required packages
+RUN apt-get update && \
+    apt-get install -y -q \
+        python3-catkin-tools python3-osrf-pycommon \
+        tmux git apt-utils && \
+    rm -rf /var/lib/apt/lists/*
+
+# setup catkin workspace
+RUN mkdir -p /catkin_ws/src
+WORKDIR /catkin_ws
+
+# clone the prl_ur5_robot repo
+RUN git clone -b master https://github.com/inria-paris-robotic-lab/prl_ur5_robot src/prl_ur5_robot
+
+# install dependencies
+RUN apt-get update && \
+    echo "debconf debconf/frontend select Noninteractive" | debconf-set-selections && \
+    wstool init src ./src/prl_ur5_robot/prl_ur5_robot.rosinstall && \
+    rosdep install --ignore-src --from-paths src --skip-keys=python-pymodbus  -y -q && \
+    rm -rf /var/lib/apt/lists/*
+
+# init and build the workspace
+RUN catkin config --init --extend /opt/ros/${ROS_DISTRO}/ && \
+    catkin config --blacklist robotiq_3f_gripper_articulated_gazebo_plugins && \
+    catkin build && \
+    echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
+
+# workaround
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# setup entrypoint
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT ["/ros_entrypoint.sh"]
+
+CMD ["bash"]
