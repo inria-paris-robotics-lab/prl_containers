@@ -12,8 +12,7 @@ It is based on [osrf/ros:noetic-desktop-full](https://hub.docker.com/r/osrf/ros)
 To build:
 
 ```
-cd ./docker
-docker build -t my/ros:prl_ur5_robot -f Dockerfile.noetic-dev .
+docker build -t prl_ur5_robot:noetic-desktop-full -f docker/Dockerfile.noetic-dev .
 ```
 
 To run:
@@ -28,7 +27,7 @@ docker run \
     --device=/dev/dri:/dev/dri \
     --env="DISPLAY=$DISPLAY" \
     --rm \
-    -it my/ros:prl_ur5_robot
+    -it prl_ur5_robot:noetic-desktop-full
 ```
 
 **Remarks :** If this command is not working for you (it crashes, or you cannot get a graphical interface), this tool may be able to help you ... [rocker](https://github.com/osrf/rocker)
