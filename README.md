@@ -1,66 +1,68 @@
-# prl_containers
-This package provides container configurations for the Paris Robotics Lab software
+# :lab_coat: :microscope: :robot: Paris Robotics Lab containers
 
-## Containers list
+This repository provides container configurations for the Paris Robotics Lab software
 
-### - docker/noetic-dev
 
-Docker container with dev version of [prl_ur5_robot](https://github.com/inria-paris-robotic-lab/prl_ur5_robot) ROS stack.
+# :hammer_and_wrench: Install docker
 
-It is based on [osrf/ros:noetic-desktop-full](https://hub.docker.com/r/osrf/ros) image with pebuilded [catkin workspace](http://wiki.ros.org/catkin/workspaces) that hosts the prl_ur5_robot stack and all the required dependencies.
+A Docker Engine must be installed with a version higher than 19.03.
+See [offical instructions](https://docs.docker.com/engine/install/ubuntu/) for updating your system.
 
-To build:
+# :house: Start the robot using the docker images
 
-```
-docker build -t prl_ur5_robot:noetic-desktop-full -f docker/Dockerfile.noetic-dev .
-```
+Using the default images is as easy as:
 
-To run:
+1. Setup environment variables.
 
-*On Ubuntu with Intel graphics:*
+Copy the `.env` file into a private local file, such as `.env.local`:
 
-```
-xhost +
-docker run \
-    --network host \
-    --volume='/tmp/.X11-unix:/tmp/.X11-unix:rw' \
-    --device=/dev/dri:/dev/dri \
-    --env="DISPLAY=$DISPLAY" \
-    --rm \
-    -it prl_ur5_robot:noetic-desktop-full
+```bash
+$ cp .env .env.local
 ```
 
-**Remarks :** If this command is not working for you (it crashes, or you cannot get a graphical interface), this tool may be able to help you ... [rocker](https://github.com/osrf/rocker)
+Edit it with your own values. For example, you can find your user and group identifiers with:
 
-## Good practices (for Docker novice)
-Docker containers are not persistent, everything - file changed or created, installs, ... - made in the container will be lost after exiting. (There are some ways of making it persistent but I don't recommend it).  
-However, I can recommend two workarounds to overcome this "limitation".
+```bash
+$ id -u
+1000
+$ id -g
+1000
+```
 
-### Mounting [volumes](https://docs.docker.com/storage/volumes/)
-Mounting a [volumes](https://docs.docker.com/storage/volumes/) allows you to 'share' files between your machine and your container. Once the container is closed, the files remain on your machine.  
-To use this mechanism simply add the following parameter to the `docker run` command :
-```
---volume='/path/to/dir/on/machine:/path/to/dir/in/container:rw'
-```
-For more info see [https://docs.docker.com/storage/volumes/](https://docs.docker.com/storage/volumes/)
+2. Compose Docker images
 
-### Create custom image
-If you need to have extra installed softwares in your container and don't want to install them every time you run a new instance, you can [build a custom docker image](https://docs.docker.com/engine/reference/builder/) that **extends** the one given by this repo (with your softwares already installed in it).  
-Your docker file will look like something like this :
-```
-FROM my/ros:prl_ur5_robot
+`docker compose` allows to split images into multiple services, easing maintenance and debug. Two services will be created here. The first one contains the ROS core, and the second one contains our lab-based packages. 
 
-RUN <your_commands>
-...
-RUN <your_commands>
+Simply run the following command:
 
-COPY ./ros_entrypoint.sh /
-ENTRYPOINT ["/ros_entrypoint.sh"]
+```
+$ docker compose --env-file /path/to/your/.env up -d
+``` 
 
-CMD ["bash"]
+3. Look at logs!
+
+For all logs, you can start:
+
 ```
-and the build using :
+$ docker compose --env-file /path/to/your/.env logs -f
+``` 
+
+But, you can get logs from a specific image as:
+
 ```
-cd ./docker
-docker build -t my/ros:<custom_image_name> -f <path_to_docker_file> .
+$ docker compose --env-file /path/to/your/.env logs -f prl
+``` 
+
+# :houses: Add your own image
+
+Now, you might want to add your own Docker image running your project. For that, you will add a new Dockerfile and modify the file `docker-compose.yaml` to include it.
+
+But, first, you should keep in mind that Docker containers are not persistent by default. If you start an interactive shell,  every modifications done locally will be lost.
+
+If you modify your setup, then you should do it in your Dockerfile, and afterwards rebuild your image using the following command:
+
+```bash
+$ docker compose --env-file /path/to/your/.env up -d --force-recraete your-service-name
 ```
+
+Or, if you can to store data, you can mount volumes. A default volume named `scratch` is already in the `docker-compose.yaml` file. You can connect it a specific location on your disk by setting up the variable `SCRATCH` in your `.env` file. Of course, you can setup other volumes as way, such as your code.
