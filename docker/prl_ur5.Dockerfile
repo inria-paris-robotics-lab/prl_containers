@@ -39,8 +39,7 @@ RUN catkin config --init --extend /opt/ros/noetic/ && \
     catkin build && \
     echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 
-# workaround
-# RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN chmod -R g+w /catkin_ws
 
 # setup entrypoint
 COPY ./ros_entrypoint.sh /

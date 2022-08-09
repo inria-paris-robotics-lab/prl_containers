@@ -6,7 +6,12 @@ This repository provides container configurations for the Paris Robotics Lab sof
 # :hammer_and_wrench: Install docker
 
 A Docker Engine must be installed with a version higher than 19.03.
-See [offical instructions](https://docs.docker.com/engine/install/ubuntu/) for updating your system.
+See [offical instructions](https://docs.docker.com/engine/install/ubuntu/) for updating your system. 
+
+You might also want to install the nvidia runtime as [described here](https://docs.docker.com/config/containers/resource_constraints/#gpu).
+
+If you are using the lab machine, this should already be correctly setup.
+
 
 # :house: Start the robot using the docker images
 
@@ -28,6 +33,8 @@ $ id -u
 $ id -g
 1000
 ```
+
+For details about the `PRL_COMMAND`, see these [instructions](https://github.com/inria-paris-robotic-lab/prl_ur5_robot).
 
 2. Compose Docker images
 
@@ -53,16 +60,25 @@ But, you can get logs from a specific image as:
 $ docker compose --env-file /path/to/your/.env logs -f prl
 ``` 
 
-# :houses: Add your own image
+# :houses: Add your project
 
-Now, you might want to add your own Docker image running your project. For that, you will add a new Dockerfile and modify the file `docker-compose.yaml` to include it.
+First of all, you must keep in mind that Docker containers are not persistent. For example, if you start an interactive shell and install a new package, it will be lost when you close your shell.
 
-But, first, you should keep in mind that Docker containers are not persistent by default. If you start an interactive shell,  every modifications done locally will be lost.
+Generally, you only want to load your code, your Python environment and your data in a container. For that, you can mount volumes into your container. As the data are not stored solely on the Docker container, any modification will be persistent.
 
-If you modify your setup, then you should do it in your Dockerfile, and afterwards rebuild your image using the following command:
+A default volume named `scratch` is already in the `docker-compose.yaml` file. You can connect it a specific location on your disk by setting up the variable `SCRATCH` in your `.env` file. Of course, you can setup other volumes as way, such as your code.
 
-```bash
-$ docker compose --env-file /path/to/your/.env up -d --force-recraete your-service-name
+Once you have adapted the `.env` file or the `docker-compose.yaml` file to fit your need, you can start an interactive session with the following command:
+
+```
+docker exec -it project bash
 ```
 
-Or, if you can to store data, you can mount volumes. A default volume named `scratch` is already in the `docker-compose.yaml` file. You can connect it a specific location on your disk by setting up the variable `SCRATCH` in your `.env` file. Of course, you can setup other volumes as way, such as your code.
+However, if you want to use a more fine grained setup (e.g. a setup that needs `sudo` access), you should create your own Dockerfile. You can take inspirations from Dockerfiles in `docker/`. 
+Then, you can rebuild your image using the following command:
+
+```bash
+$ docker compose --env-file /path/to/your/.env up -d --force-recreate --build project
+```
+
+Here, `project` corresponds to service name in the `docker-compose.yaml` file. 

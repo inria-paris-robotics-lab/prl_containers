@@ -3,6 +3,7 @@ version: '3.8'
 services:
   ros-master:
     image: ros:noetic-ros-core
+    container_name: prl-core
     command: stdbuf -o L roscore
     networks:
       - ros
@@ -10,6 +11,7 @@ services:
 
   prl:
     image: prl/ur5:latest
+    container_name: prl-ur5
     build:
       context: docker
       dockerfile: prl_ur5.Dockerfile
@@ -20,43 +22,68 @@ services:
       - ros-master
     environment:
       - "ROS_MASTER_URI=http://ros-master:11311"
+      - "ROS_LOG_DIR=/log"
       - "DISPLAY"
       - "QT_X11_NO_MITSHM=1" #fix some QT bugs
     # Share your user to the container in order to access your x11
-    user: ${UID}:${GID} 
+    user: ${UID}:0
     volumes: 
       # Share your x11 socket and permissions to the container
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /etc/group:/etc/group:ro
       - /etc/passwd:/etc/passwd:ro
       - /etc/shadow:/etc/shadow:ro
+      - log:/log
+      # Hack to fix gazebo that wants a ~/.gazebo
+      - $HOME:$HOME
+        # tty: true
     command: stdbuf -o L roslaunch prl_ur5_run $PRL_COMMAND
 
-  # Uncommment this part to add your own Dockerfile
-  # my-project:
-  #   image: awesome:latest
-  #   build:
-  #     context: awesome
-  #     dockerfile: Dockerfile
-  #   networks:
-  #     - ros
-  #   volumes:
-  #     - scratch:/scratch
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - prl
-  #   environment:
-  #     - "ROS_MASTER_URI=http://ros-master:11311"
+  # Edit this part to fit your need. You might want to use your own dockerfile as in the `prl` service.
+  project:
+    image: nvidia/cuda:10.2-base
+    container_name: my-project
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - ros
+    volumes:
+      - scratch:/scratch
+      - log:/log
+    restart: unless-stopped
+    depends_on:
+      - prl
+      - roscore
+    environment:
+      - "ROS_MASTER_URI=http://ros-master:11311"
+      - "ROS_LOG_DIR=/log"
 
 networks:
   ros:
+    name: ros
     driver: bridge
 
 volumes:
+  # Create a persistent volume for ROS log.
+  # LOG_DIR must be setup in a .env file
+  log:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: $LOG_DIR
+
+  # Create a persistent volume for your code or data.
+  # SCRATCH_DIR must be setup in a .env file
   scratch:
-    # Uncomment this part to mount your persistent volume. SCRATCH must be setup in a .env file
-    #     driver: local
-    #     driver_opts:
-    #       o: bind
-    #       type: none
-    #       device: $SCRATCH
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: $SCRATCH_DIR
