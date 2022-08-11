@@ -15,4 +15,3 @@ RUN wget \
 ENV PATH="/root/miniconda3/bin:${PATH}"
 ARG PATH="/root/miniconda3/bin:${PATH}"
 
-RUN conda install -c conda-forge ros-rospy 
