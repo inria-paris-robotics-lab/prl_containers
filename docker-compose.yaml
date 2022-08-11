@@ -44,9 +44,7 @@ services:
     container_name: my-project
     build:
       context: docker
-      dockerfile: project.Dockerfile
-      args:
-        - PROJECT_IMAGE=$PROJECT_IMAGE
+      dockerfile: $PROJECT_IMAGE
     # Uncomment this part if you want to use a GPU
     # deploy:
     #   resources:

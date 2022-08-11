@@ -1,5 +1,4 @@
-ARG PROJECT_IMAGE
-FROM $PROJECT_IMAGE
+FROM ros:noetic-ros-base-focal
 
 # Install generic packages
 RUN apt-get update && \
