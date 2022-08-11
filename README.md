@@ -62,23 +62,23 @@ $ docker compose --env-file /path/to/your/.env logs -f prl
 
 # :houses: Add your project
 
-First of all, you must keep in mind that Docker containers are not persistent. For example, if you start an interactive shell and install a new package, it will be lost when you close your shell.
+You must keep in mind that Docker containers are not persistent. For example, if you start an interactive shell and install a new package, it will be lost when you close your shell.
 
-Generally, you only want to load your code, your Python environment and your data in a container. For that, you can mount volumes into your container. As the data are not stored solely on the Docker container, any modification will be persistent.
+Generally, you want to load your code and your data in a container. For that, you can mount volumes into your container. As the data are not stored solely on the Docker container, any modification will be persistent.
 
 A default volume named `scratch` is already in the `docker-compose.yaml` file. You can connect it a specific location on your disk by setting up the variable `SCRATCH` in your `.env` file. Of course, you can setup other volumes as way, such as your code.
 
 Once you have adapted the `.env` file or the `docker-compose.yaml` file to fit your need, you can start an interactive session with the following command:
 
 ```
-docker exec -it project bash
+docker exec -it my-project bash
 ```
 
-However, if you want to use a more fine grained setup (e.g. a setup that needs `sudo` access), you should create your own Dockerfile. You can take inspirations from Dockerfiles in `docker/`. 
-Then, you can rebuild your image using the following command:
+In this session, you will find a Python version created with `conda` that has `rospy` installed. If you want to use your own Python environment (for example, you can add it to your scratch), just think about installing [`rospy`](https://anaconda.org/conda-forge/ros-rospy) yourself.
+
+
+Moreover, if you want to use a more sophisticated setup, you can edit the project [Dockerfile](./docker/project.Dockerfile). Then, you need to rebuild your image using the following command:
 
 ```bash
 $ docker compose --env-file /path/to/your/.env up -d --force-recreate --build project
 ```
-
-Here, `project` corresponds to service name in the `docker-compose.yaml` file. 

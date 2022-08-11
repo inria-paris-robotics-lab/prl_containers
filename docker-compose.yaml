@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
 
   prl:
-    image: prl/ur5:latest
+    image: prl/ur5:noetic
     container_name: prl-ur5
     build:
       context: docker
@@ -36,21 +36,26 @@ services:
       - log:/log
       # Hack to fix gazebo that wants a ~/.gazebo
       - $HOME:$HOME
-        # tty: true
     command: stdbuf -o L roslaunch prl_ur5_run $PRL_COMMAND
 
-  # Edit this part to fit your need. You might want to use your own dockerfile as in the `prl` service.
+  # Edit this part to fit your need.
   project:
-    image: nvidia/cuda:10.2-base
+    image: project:latest
     container_name: my-project
+    build:
+      context: docker
+      dockerfile: project.Dockerfile
+      args:
+        - PROJECT_IMAGE=$PROJECT_IMAGE
+    # Uncomment this part if you want to use a GPU
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     tty: true
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
     networks:
       - ros
     volumes:
