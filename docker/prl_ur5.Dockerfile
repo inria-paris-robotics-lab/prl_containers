@@ -33,6 +33,7 @@ RUN apt-get update && \
     rosdep install --ignore-src --from-paths src --skip-keys=python-pymodbus -y -q && \
     rm -rf /var/lib/apt/lists/*
 
+
 # init and build the workspace
 RUN catkin config --init --extend /opt/ros/noetic/ && \
     catkin config --skiplist robotiq_3f_gripper_articulated_gazebo_plugins && \
@@ -40,6 +41,18 @@ RUN catkin config --init --extend /opt/ros/noetic/ && \
     echo "source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 
 RUN chmod -R g+w /catkin_ws
+
+# You should use the latest configuration by mounting the robot folder
+RUN mkdir archive
+RUN mv src/prl_ur5_robot_configuration archive
+
+# Missing packages
+RUN apt-get update && \
+    apt-get install -y -qq --no-install-recommends udev ros-noetic-rosbash && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3 /usr/bin/python 
+
 
 # setup entrypoint
 COPY ./ros_entrypoint.sh /
