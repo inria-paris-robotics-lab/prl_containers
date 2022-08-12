@@ -6,7 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack on Ubuntu 22.04
-        run: docker-compose up -d
+        run: docker compose --env-file .env up -d
       - name: Test
         run: docker exec -t project python -c 'import rospy; rospy.init_node("test", anonymous=True)' 
 
@@ -15,6 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build the stack on macOS
-        run: docker-compose up -d
+        run: docker compose --env-file .env up -d
       - name: Test
         run: docker exec -t project python -c 'import rospy; rospy.init_node("test", anonymous=True)' 
