@@ -62,7 +62,7 @@ services:
     restart: unless-stopped
     depends_on:
       - prl
-      - roscore
+      - ros-master
     environment:
       - "ROS_MASTER_URI=http://ros-master:11311"
       - "ROS_LOG_DIR=/log"
