@@ -25,14 +25,7 @@ Copy the `.env` file into a private local file, such as `.env.local`:
 $ cp .env .env.local
 ```
 
-Edit it with your own values. For example, you can find your user and group identifiers with:
-
-```bash
-$ id -u
-1000
-$ id -g
-1000
-```
+Edit it with your own values.
 
 For details about the `PRL_COMMAND`, see these [instructions](https://github.com/inria-paris-robotic-lab/prl_ur5_robot).
 
@@ -43,6 +36,7 @@ For details about the `PRL_COMMAND`, see these [instructions](https://github.com
 Simply run the following command:
 
 ```
+$ xhost +
 $ docker compose --env-file /path/to/your/.env up -d
 ``` 
 

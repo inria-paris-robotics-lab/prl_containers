@@ -25,17 +25,12 @@ services:
       - "ROS_LOG_DIR=/log"
       - "DISPLAY"
       - "QT_X11_NO_MITSHM=1" #fix some QT bugs
-    # Share your user to the container in order to access your x11
-    user: ${UID}:0
-    volumes: 
-      # Share your x11 socket and permissions to the container
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - /etc/group:/etc/group:ro
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/shadow:/etc/shadow:ro
+    devices:
+     - "/dev/dri:/dev/dri"
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.Xauthority:/root/.Xauthority
       - log:/log
-      # Hack to fix gazebo that wants a ~/.gazebo
-      - $HOME:$HOME
     command: stdbuf -o L roslaunch prl_ur5_run $PRL_COMMAND
 
   # Edit this part to fit your need.
