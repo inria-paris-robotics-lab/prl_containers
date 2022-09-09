@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  ros-master:
+    image: ros:noetic-ros-core
+    container_name: prl-core
+    command: stdbuf -o L roscore
+    # networks:
+    #   - ros
+    # WARNING: it provides access to all ports
+    network_mode: host
+    restart: unless-stopped
+
+  prl:
+    image: prl/ur5:noetic
+    container_name: prl-ur5
+    build:
+      context: docker
+      dockerfile: prl_ur5.Dockerfile
+    # networks:
+    #   - ros
+    # WARNING: it provides access to all ports
+    network_mode: host
+    # WARNING: it provides access to all devices
+    privileged: true
+    restart: unless-stopped
+    depends_on:
+      - ros-master
+    environment:
+      - "ROS_MASTER_URI=http://localhost:11311"
+      - "ROS_LOG_DIR=/log"
+      - "PRL_LOG_PATH=/log"
+      - "DISPLAY"
+      - "QT_X11_NO_MITSHM=1" #fix some QT bugs
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.Xauthority:/root/.Xauthority
+      - log:/log
+      - $PRL_UR5_CONFIG:/catkin_ws/src/prl_ur5_robot_configuration
+        # tty: true
+    command: stdbuf -o L roslaunch prl_ur5_run $PRL_COMMAND
+        #
+        # source devel/setup.bash && roslaunch prl_ur5_run real.launch
+
+  # Edit this part to fit your need.
+  project:
+    image: project:latest
+    container_name: my-project
+    build:
+      context: docker
+      dockerfile: $PROJECT_IMAGE
+    # Uncomment this part if you want to use a GPU
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    tty: true
+    # networks:
+    #   - ros
+    # WARNING: it provides access to all ports
+    network_mode: host
+    volumes:
+      - scratch:/scratch
+      - log:/log
+    restart: unless-stopped
+    depends_on:
+      - prl
+      - ros-master
+    environment:
+      - "ROS_MASTER_URI=http://ros-master:11311"
+      - "ROS_LOG_DIR=/log"
+
+networks:
+  ros:
+    name: ros
+    driver: bridge
+
+volumes:
+  # Create a persistent volume for ROS log.
+  # LOG_DIR must be setup in a .env file
+  log:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: $LOG_DIR
+
+  # Create a persistent volume for your code or data.
+  # SCRATCH_DIR must be setup in a .env file
+  scratch:
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: $SCRATCH_DIR
