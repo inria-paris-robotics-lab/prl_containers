@@ -14,10 +14,10 @@ RUN mkdir -p /catkin_ws/src
 WORKDIR /catkin_ws
 
 # clone the prl_ur5_robot repo
-RUN git clone -b master https://github.com/inria-paris-robotic-lab/prl_ur5_robot src/prl_ur5_robot
-RUN git clone -b master https://github.com/inria-paris-robotic-lab/prl_ur5_robot_configuration src/prl_ur5_robot_configuration
+RUN git clone -b master https://github.com/inria-paris-robotics-lab/prl_ur5_robot src/prl_ur5_robot
+RUN git clone -b master https://github.com/inria-paris-robotics-lab/prl_ur5_robot_configuration src/prl_ur5_robot_configuration
 # clone the prl_utils repo
-RUN git clone https://github.com/inria-paris-robotic-lab/prl_utils.git src/prl_utils
+RUN git clone https://github.com/inria-paris-robotics-lab/prl_utils.git src/prl_utils
 
 # install dependencies
 RUN apt-get update && \

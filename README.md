@@ -5,7 +5,7 @@ This package provides container configurations for the Paris Robotics Lab softwa
 
 ### - docker/noetic-dev
 
-Docker container with dev version of [prl_ur5_robot](https://github.com/inria-paris-robotic-lab/prl_ur5_robot) ROS stack.
+Docker container with dev version of [prl_ur5_robot](https://github.com/inria-paris-robotics-lab/prl_ur5_robot) ROS stack.
 
 It is based on [osrf/ros:noetic-desktop-full](https://hub.docker.com/r/osrf/ros) image with pebuilded [catkin workspace](http://wiki.ros.org/catkin/workspaces) that hosts the prl_ur5_robot stack and all the required dependencies.
 
